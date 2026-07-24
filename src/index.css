@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
 * {
   box-sizing: border-box;
 }
@@ -7,14 +9,34 @@ body {
   margin: 0;
   padding: 0;
   background: #0b1420;
-  min-height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 #root {
-  min-height: 100vh;
+  height: 100dvh;
   display: flex;
   align-items: flex-start;
   justify-content: center;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
+  env(safe-area-inset-left);
+  box-sizing: border-box;
+}
+
+input::placeholder {
+  color: #5c6b7d;
+}
+
+select option {
+  background: #1a2a3e;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
