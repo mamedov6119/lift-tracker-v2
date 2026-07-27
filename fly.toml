@@ -1,0 +1,42 @@
+# Fly.io deployment config.
+#
+# `app` must be globally unique — change it if `fly launch` says it's taken.
+# `primary_region` should be near you: run `fly platform regions` for the list
+# (ams = Amsterdam, iad = Virginia, fra = Frankfurt, lhr = London).
+app = "lift-tracker"
+primary_region = "ams"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3001"
+  # Must match the mount destination below — this is the SQLite file.
+  LIFT_DB = "/data/lift.db"
+
+# The persistent volume. Without this the database is recreated empty on every
+# deploy. Create it once with:
+#   fly volumes create lift_data --size 1 --region ams
+[[mounts]]
+  source = "lift_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  # A volume belongs to exactly one machine, so this app runs single-instance.
+  # Suspending when idle keeps it cheap; SQLite in WAL mode resumes cleanly.
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[http_service.checks]]
+  grace_period = "10s"
+  interval = "30s"
+  method = "GET"
+  path = "/api/health"
+  timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

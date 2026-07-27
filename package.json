@@ -3,18 +3,27 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -n api,web -c red,cyan \"npm:server\" \"vite\"",
+    "web": "vite",
+    "server": "node --watch server/index.js",
     "build": "vite build",
-    "preview": "vite preview"
+    "start": "node server/index.js",
+    "preview": "vite preview",
+    "test": "vitest run"
   },
   "dependencies": {
-    "lucide-react": "^0.383.0",
+    "express": "^5.2.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.4.0"
+    "concurrently": "^10.0.4",
+    "vite": "^5.4.0",
+    "vitest": "^4.1.10"
   }
 }

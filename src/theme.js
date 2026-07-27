@@ -1,18 +1,40 @@
-// ---------- design tokens (Midnight Teal) ----------
+// ---------- design tokens ----------
+// Ported from the Lifter design (claude.ai/design → Lifter.dc.html): near-black
+// surfaces, a single red accent, and white reserved for primary actions.
 const T = {
-    bg: "#0B1420",
-    surface: "#121F30",
-    surface2: "#1A2A3E",
+    // surfaces
+    bg: "#000000",
+    card: "#1C1C1E",
+    cardSunken: "#151516",
+    raised: "#2C2C2E",
+    track: "#232325",
+
+    // accent + status
+    accent: "#FF4D4D",
+    accentSoft: "rgba(255,77,77,0.15)",
+    accentBorder: "rgba(255,77,77,0.28)",
+    accentGradient: "linear-gradient(120deg,#FF4D4D,#B2273D)",
+    accentDot: "#3a2020",
+    success: "#33E096",
+    successInk: "#062",
+
+    // text
+    text: "#FFFFFF",
+    textSecondary: "rgba(255,255,255,0.45)",
+    textMuted: "rgba(255,255,255,0.4)",
+    textFaint: "rgba(255,255,255,0.35)",
+    textDisabled: "rgba(255,255,255,0.25)",
+
+    // lines + fills
+    hairline: "rgba(255,255,255,0.06)",
     border: "rgba(255,255,255,0.08)",
-    borderStrong: "rgba(255,255,255,0.16)",
-    teal: "#1D9E75",
-    tealLight: "#5DCAA5",
-    tealDim: "rgba(29,158,117,0.16)",
-    amber: "#D89A3E",
-    amberDim: "rgba(216,154,62,0.16)",
-    textPrimary: "#E8ECF2",
-    textSecondary: "#8FA0B3",
-    textMuted: "#5C6B7D",
+    checkBorder: "rgba(255,255,255,0.25)",
+    veil: "rgba(255,255,255,0.06)",
+
+    font: '-apple-system, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif',
+
+    // the design's 20px screen gutter, used everywhere
+    gutter: 20,
 };
 
 export default T;

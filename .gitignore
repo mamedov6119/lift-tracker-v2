@@ -29,3 +29,9 @@ Thumbs.db
 
 # Vite cache
 .vite/
+
+# Local SQLite database
+data/
+
+# Local agent tooling config (delete this line if you want it shared)
+.claude/

@@ -1,34 +1,42 @@
 import T from "../theme.js";
+import { AccountNavIcon, HomeNavIcon, ProgressNavIcon, TrainingNavIcon } from "./icons.jsx";
 
-export default function BottomNav({ nav, activeTab, onChange }) {
-    return (<div style={{ display: "flex", borderTop: `1px solid ${T.border}`, background: T.surface }}>
-        {nav.map((n) => {
-            const Icon = n.icon;
-            const active = activeTab === n.id;
-            return (
-                <button
-                    key={n.id}
-                    onClick={() => onChange(n.id)}
-                    style={{
-                        flex: 1, background: "none", border: "none", cursor: "pointer",
-                        display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                        padding: "10px 0 12px", position: "relative",
-                        color: active ? T.tealLight : T.textMuted,
-                    }}
-                >
-                    <div style={{ position: "relative" }}>
-                        <Icon size={20} />
-                        {n.badge > 0 && (
-                            <span style={{
-                                position: "absolute", top: -4, right: -8, background: T.amber, color: "#412402",
-                                fontSize: 10, fontWeight: 700, borderRadius: 8, minWidth: 15, height: 15,
-                                display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px",
-                            }}>{n.badge}</span>
-                        )}
-                    </div>
-                    <span style={{ fontSize: 11 }}>{n.label}</span>
-                </button>
-            );
-        })}
-    </div>)
+export const TABS = [
+  { id: "home", label: "Home", Icon: HomeNavIcon },
+  { id: "training", label: "Training", Icon: TrainingNavIcon },
+  { id: "progress", label: "Progress", Icon: ProgressNavIcon },
+  { id: "account", label: "Account", Icon: AccountNavIcon },
+];
+
+export default function BottomNav({ active, onChange }) {
+  return (
+    <nav
+      style={{
+        flexShrink: 0, display: "flex", padding: "10px 12px",
+        paddingBottom: "calc(14px + env(safe-area-inset-bottom))",
+        background: T.bg, borderTop: `1px solid ${T.border}`,
+      }}
+    >
+      {TABS.map(({ id, label, Icon }) => {
+        const isActive = active === id;
+        const color = isActive ? T.accent : T.textMuted;
+        return (
+          <button
+            key={id}
+            type="button"
+            onClick={() => onChange(id)}
+            aria-label={label}
+            aria-current={isActive ? "page" : undefined}
+            style={{
+              flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+              background: "none", border: "none", cursor: "pointer", padding: "2px 0",
+            }}
+          >
+            <Icon color={color} />
+            <span style={{ fontSize: 10.5, fontWeight: 600, color }}>{label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
 }

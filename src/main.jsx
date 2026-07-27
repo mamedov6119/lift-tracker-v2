@@ -1,6 +1,5 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import "./storage.js"; // must run before App.jsx touches window.storage
 import LiftTracker from "./App.jsx";
 import "./index.css";
 
