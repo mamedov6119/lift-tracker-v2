@@ -85,9 +85,19 @@ fly volumes create lift_data --size 1 --region <your-region>
 fly deploy
 ```
 
-Edit `primary_region` in `fly.toml` to match the region you picked. The app
-runs as a single machine because a Fly volume attaches to exactly one — do not
-`fly scale count` above 1, or the second machine gets its own empty database.
+Set `primary_region` in `fly.toml` to the region you picked, and pass that same
+region to `fly volumes create` — a volume in a different region than the app
+will never be mounted.
+
+**After `fly launch` finishes, re-open `fly.toml`.** The wizard rewrites it and
+routinely drops `[[mounts]]` and `[env]`. If `[[mounts]]` is missing the deploy
+still succeeds, then silently recreates an empty database on every release —
+the worst kind of failure, because it looks like it worked. Confirm all three
+survived: `[[mounts]]`, `LIFT_DB`, and `internal_port` matching `PORT`.
+
+The app runs as a single machine because a Fly volume attaches to exactly one —
+do not `fly scale count` above 1, or the second machine gets its own empty
+database.
 
 To back up, `fly ssh console -C "cat /data/lift.db" > backup.db`, or run
 `fly volumes snapshots list lift_data`.

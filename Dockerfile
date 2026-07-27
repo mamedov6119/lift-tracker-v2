@@ -15,6 +15,8 @@ RUN npm run build
 FROM node:24-alpine
 WORKDIR /app
 ENV NODE_ENV=production
+# Must match `internal_port` and [env] PORT in fly.toml, or Fly routes traffic
+# to a port nothing is listening on and every health check fails.
 ENV PORT=3001
 
 COPY package.json package-lock.json ./
