@@ -22,6 +22,7 @@ export default function InsightBanner({ insight, onDismiss, sunken = false }) {
     >
       <button
         type="button"
+        className="pressable"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         style={{
@@ -61,10 +62,11 @@ export default function InsightBanner({ insight, onDismiss, sunken = false }) {
           {onDismiss && (
             <button
               type="button"
+              className="pressable"
               onClick={() => onDismiss(insight.id)}
               style={{
-                marginTop: 12, display: "flex", alignItems: "center", gap: 6,
-                padding: "7px 12px", borderRadius: 20, background: T.raised,
+                marginTop: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                minHeight: T.tap, padding: "0 16px", borderRadius: 20, background: T.raised,
                 color: T.textSecondary, fontSize: 12, fontWeight: 600,
                 border: "none", cursor: "pointer",
               }}

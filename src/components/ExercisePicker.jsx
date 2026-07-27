@@ -124,7 +124,7 @@ export default function ExercisePicker({ exercises, selected, onSelect }) {
               aria-label="Search exercises"
               style={{
                 width: "100%", background: T.raised, border: `1px solid ${T.border}`,
-                borderRadius: 10, padding: "9px 12px", color: T.text, fontSize: 14, outline: "none",
+                borderRadius: 10, minHeight: T.tap, padding: "0 12px", color: T.text, fontSize: 14, outline: "none",
               }}
             />
           </div>

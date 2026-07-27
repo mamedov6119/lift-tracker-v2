@@ -26,7 +26,7 @@ export default function SessionRing({ completed = 0, planned = 0 }) {
         aria-label={planned > 0 ? `${completed} of ${planned} exercises complete` : "Nothing planned"}
       >
         <CircleCheckIcon size={13} color={T.accent} />
-        <div style={{ fontSize: 22, fontWeight: 700, color: T.text, marginTop: 2 }}>
+        <div className="tnum" style={{ fontFamily: T.fontDisplay, fontSize: 26, fontWeight: 700, color: T.text, marginTop: 2, lineHeight: 1.1 }}>
           {planned > 0 ? completed : "—"}
         </div>
         <div style={{ fontSize: 11, color: T.textMuted }}>

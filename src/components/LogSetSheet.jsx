@@ -4,7 +4,7 @@ import { CloseIcon } from "./icons.jsx";
 
 const field = {
   background: T.raised, border: `1px solid ${T.border}`, borderRadius: 12,
-  padding: "11px 12px", color: T.text, fontSize: 15, outline: "none",
+  minHeight: T.tap, padding: "0 12px", color: T.text, fontSize: 15, outline: "none",
   width: "100%", minWidth: 0,
 };
 const labelStyle = { fontSize: 11, fontWeight: 600, color: T.textMuted, letterSpacing: 0.3, textTransform: "uppercase" };
@@ -88,8 +88,8 @@ export default function LogSetSheet({ exercise, date, unit = "lb", onSubmit, onC
             onClick={onClose}
             aria-label="Close"
             style={{
-              width: 32, height: 32, borderRadius: 10, background: T.raised, border: "none",
-              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+              width: T.tap, height: T.tap, borderRadius: 12, background: T.raised, border: "none",
+              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0,
             }}
           >
             <CloseIcon size={11} />

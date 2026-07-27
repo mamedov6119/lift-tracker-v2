@@ -28,6 +28,16 @@ export function monthOf(iso) {
   return iso.slice(0, 7);
 }
 
+// Same day-of-month in a neighbouring month, clamped to that month's length so
+// "Jan 31 → next" lands on Feb 28 rather than overflowing into March.
+export function shiftMonth(iso, delta) {
+  const d = fromISO(iso);
+  const target = new Date(d.getFullYear(), d.getMonth() + delta, 1);
+  const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+  target.setDate(Math.min(d.getDate(), lastDay));
+  return toISO(target);
+}
+
 export function formatLong(iso) {
   return fromISO(iso).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
 }

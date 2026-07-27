@@ -10,8 +10,16 @@ import { formatMinutes, formatVolume } from "../lib/format.js";
 function StatLine({ label, value }) {
   return (
     <div>
-      <div style={{ fontSize: 11, color: T.textMuted, fontWeight: 600 }}>{label}</div>
-      <div style={{ fontSize: 15, fontWeight: 700, color: T.text, marginTop: 2 }}>{value}</div>
+      <div style={{ fontSize: 10.5, color: T.textMuted, fontWeight: 600, letterSpacing: 0.5 }}>{label}</div>
+      <div
+        className="tnum"
+        style={{
+          fontFamily: T.fontDisplay, fontSize: 19, fontWeight: 700, color: T.text, marginTop: 1,
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+        }}
+      >
+        {value}
+      </div>
     </div>
   );
 }
@@ -31,9 +39,10 @@ export default function TrainingTab({
 
   return (
     <>
-      <div style={{ margin: `28px ${T.gutter}px 0` }}>
+      <div style={{ margin: `calc(26px + env(safe-area-inset-top)) ${T.gutter}px 0` }}>
         <button
           type="button"
+          className="pressable"
           onClick={onOpenAdvisor}
           style={{
             width: "100%", padding: "14px 16px", borderRadius: 18, background: T.accentGradient,
@@ -45,7 +54,7 @@ export default function TrainingTab({
           </span>
           <span style={{ flex: 1, textAlign: "left" }}>
             <span style={{ display: "block", fontSize: 14.5, fontWeight: 700 }}>Exercise Advisor</span>
-            <span style={{ display: "block", fontSize: 11.5, color: "rgba(255,255,255,0.8)", marginTop: 1 }}>
+            <span style={{ display: "block", fontSize: 11.5, color: "#fff", marginTop: 1 }}>
               {advisorQueue.length > 0
                 ? `${advisorQueue.length} suggestion${advisorQueue.length === 1 ? "" : "s"} for today's plan`
                 : "You've reviewed every suggestion"}
@@ -65,8 +74,10 @@ export default function TrainingTab({
 
       <div style={{ display: "flex", alignItems: "center", gap: 20, margin: `20px ${T.gutter}px 0` }}>
         <SessionRing completed={session?.completedCount ?? 0} planned={session?.plannedCount ?? 0} />
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
-          <StatLine label="TRAINING STYLE" value={session?.trainingStyle || "—"} />
+        {/* 2×2 rather than a 1×4 column: four stacked lines ran ~180px tall
+            against a 120px ring, which left the row visibly lopsided. */}
+        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 10px" }}>
+          <StatLine label="STYLE" value={session?.trainingStyle || "—"} />
           <StatLine
             label="VOLUME"
             value={session?.volume ? formatVolume(session.volume, session.unit) : "—"}
@@ -77,12 +88,14 @@ export default function TrainingTab({
       </div>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, margin: `24px ${T.gutter}px 10px` }}>
-        <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: T.text }}>Daily plan</h2>
+        <h2 style={{ margin: 0, fontFamily: T.fontDisplay, fontSize: 22, fontWeight: 700, letterSpacing: 0.3, textTransform: "uppercase", color: T.text }}>Daily plan</h2>
         <button
           type="button"
+          className="pressable"
           onClick={onAddExercise}
           style={{
-            display: "flex", alignItems: "center", gap: 5, padding: "8px 14px", borderRadius: 20,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+            minHeight: T.tap, padding: "0 16px", borderRadius: 20,
             background: T.raised, color: T.text, fontSize: 12.5, fontWeight: 600,
             border: "none", cursor: "pointer", flexShrink: 0,
           }}
@@ -104,6 +117,7 @@ export default function TrainingTab({
         <div style={{ margin: `18px ${T.gutter}px 0` }}>
           <button
             type="button"
+            className="pressable"
             onClick={onCompleteAll}
             disabled={allDone}
             style={{

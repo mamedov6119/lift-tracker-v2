@@ -6,11 +6,12 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: #000;
+  background: #0a0a0b;
   color: #fff;
   min-height: 100dvh;
-  font-family: -apple-system, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif;
+  font-family: "Barlow", -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 #root {
@@ -23,12 +24,53 @@ select {
   font-family: inherit;
 }
 
+/* We supply our own press feedback (.pressable), so suppress the platform's
+   blue tap flash — otherwise both fire and the result reads as a double blink. */
+button,
+[role="button"],
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
 input::placeholder {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.38);
 }
 
 select option {
   background: #1c1c1e;
+}
+
+/* Numbers that change in place (stats, timers, calendar) must not reflow as
+   digits swap width. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Several inputs set `outline: none` for their custom border treatment, which
+   would strip keyboard affordance entirely. This restores it globally, and the
+   white-ring-plus-red-halo pairing stays visible on black, on the red accent,
+   and on white primary buttons alike. */
+:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 77, 77, 0.55);
+  border-radius: 6px;
+}
+
+/* Press feedback: ~140ms, and scale only — never a property that changes
+   layout bounds and nudges neighbouring rows. */
+.pressable {
+  transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1), background-color 160ms ease,
+    opacity 140ms ease;
+}
+
+.pressable:active {
+  transform: scale(0.97);
+}
+
+.pressable:disabled:active {
+  transform: none;
 }
 
 /* The design hides scrollbars on its scroll surfaces; keep that, but only
@@ -66,6 +108,23 @@ select option {
   }
 }
 
+/* Entrance for list rows. Staggered via inline animation-delay by the caller,
+   capped at a few items so a long plan never feels like it's loading slowly. */
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise-in {
+  animation: riseIn 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -77,8 +136,15 @@ select option {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .pressable:active {
+    transform: none;
   }
 }

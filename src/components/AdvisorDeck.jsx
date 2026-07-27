@@ -44,13 +44,13 @@ export default function AdvisorDeck({ queue, onReview, onClose }) {
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: `0 ${T.gutter}px` }}>
-        <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: T.text }}>Exercise Advisor</h1>
+        <h1 style={{ margin: 0, fontFamily: T.fontDisplay, fontSize: 26, fontWeight: 700, letterSpacing: 0.3, textTransform: "uppercase", color: T.text }}>Exercise Advisor</h1>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close advisor"
           style={{
-            width: 34, height: 34, borderRadius: 10, background: T.card, border: "none",
+            width: T.tap, height: T.tap, borderRadius: 12, background: T.card, border: "none",
             display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
           }}
         >
@@ -102,7 +102,7 @@ export default function AdvisorDeck({ queue, onReview, onClose }) {
               >
                 <ExerciseGlyph icon={top.icon} size={46} color="#fff" />
               </div>
-              <div style={{ fontSize: 21, fontWeight: 700, color: T.text, marginTop: 20, textAlign: "center", padding: "0 20px" }}>
+              <div style={{ fontFamily: T.fontDisplay, fontSize: 26, fontWeight: 700, letterSpacing: 0.3, color: T.text, marginTop: 20, textAlign: "center", padding: "0 20px" }}>
                 {top.name}
               </div>
               <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 6 }}>{top.category}</div>
@@ -112,6 +112,7 @@ export default function AdvisorDeck({ queue, onReview, onClose }) {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 28, padding: "8px 20px 26px" }}>
             <button
               type="button"
+              className="pressable"
               onClick={() => commit(false)}
               aria-label={`Skip ${top.name}`}
               style={{
@@ -124,6 +125,7 @@ export default function AdvisorDeck({ queue, onReview, onClose }) {
             </button>
             <button
               type="button"
+              className="pressable"
               onClick={() => commit(true)}
               aria-label={`Add ${top.name} to today's plan`}
               style={{
@@ -146,7 +148,7 @@ export default function AdvisorDeck({ queue, onReview, onClose }) {
             type="button"
             onClick={onClose}
             style={{
-              marginTop: 8, padding: "12px 22px", borderRadius: 20, background: "#fff",
+              marginTop: 8, minHeight: T.tap, padding: "0 24px", borderRadius: 20, background: "#fff",
               color: "#000", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer",
             }}
           >

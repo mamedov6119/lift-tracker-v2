@@ -45,13 +45,13 @@ export default function ProgressTab({ insight, onDismissInsight }) {
           <div style={{ margin: `16px ${T.gutter}px 0`, background: T.card, borderRadius: 20, padding: 18 }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>{detail.exercise.name}</div>
+                <div style={{ fontFamily: T.fontDisplay, fontSize: 20, fontWeight: 700, letterSpacing: 0.2, color: T.text }}>{detail.exercise.name}</div>
                 <div style={{ fontSize: 12, color: T.textMuted, marginTop: 2 }}>
                   {detail.sessions} session{detail.sessions === 1 ? "" : "s"} logged
                 </div>
               </div>
               <div style={{ textAlign: "right", flexShrink: 0 }}>
-                <div style={{ fontSize: 22, fontWeight: 700, color: T.text }}>
+                <div className="tnum" style={{ fontFamily: T.fontDisplay, fontSize: 27, fontWeight: 700, color: T.text, lineHeight: 1.1 }}>
                   {current.value}
                   <span style={{ fontSize: 12, fontWeight: 500, color: T.textMuted }}>{current.unit}</span>
                 </div>

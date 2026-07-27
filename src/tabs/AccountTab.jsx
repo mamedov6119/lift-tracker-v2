@@ -6,7 +6,7 @@ import { ChevronRightIcon } from "../components/icons.jsx";
 
 const field = {
   background: T.raised, border: `1px solid ${T.border}`, borderRadius: 10,
-  padding: "10px 12px", color: T.text, fontSize: 14, outline: "none", width: "100%",
+  minHeight: T.tap, padding: "0 12px", color: T.text, fontSize: 14, outline: "none", width: "100%",
 };
 const fieldLabel = { fontSize: 11, fontWeight: 600, color: T.textMuted, letterSpacing: 0.3, textTransform: "uppercase" };
 
@@ -15,6 +15,7 @@ function Row({ label, open, onClick, danger, children, last }) {
     <>
       <button
         type="button"
+        className="pressable"
         onClick={onClick}
         aria-expanded={children ? open : undefined}
         style={{

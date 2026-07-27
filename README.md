@@ -178,6 +178,41 @@ idempotent, so redeploying over an existing database is safe.
 | POST | `/api/insights/:id/dismiss` | dismiss for the day |
 | GET / POST | `/api/advisor` | Exercise Advisor queue; swipe result |
 
+## Design system
+
+`design-system/lifter/MASTER.md` holds the generated reference. Two deliberate
+departures from it, both recorded here so they aren't "corrected" later:
+
+- **The accent stays `#FF4D4D`,** not the recommended energy-orange. The UI was
+  imported from a specific Claude Design source built around that red; swapping
+  the brand colour would discard the design rather than elevate it.
+- **The suggested page pattern was ignored.** It resolved to a webinar
+  registration funnel, which has nothing to do with a training log.
+
+What *was* adopted: Barlow Condensed / Barlow (an athletic pairing), an
+off-black `#0A0A0B` base instead of pure black, and the accessibility and
+motion rules below.
+
+### Contrast and touch rules
+
+Text alpha tokens in `src/theme.js` are tuned against the **card** surface
+(`#1C1C1E`), the worst case in the app. Two consequences worth knowing:
+
+- **`accentInk` exists because white-on-`#FF4D4D` only reaches 3.27:1.** Any
+  text or glyph sitting on an accent fill (selected calendar day, active pill)
+  uses the dark ink instead, at 6.4:1 — the same dark-on-colour treatment the
+  design already used for the advisor's green accept button.
+- **`accentGradient` starts at `#D93A3A`, not `#FF4D4D`,** so the white label on
+  the Exercise Advisor button clears 4.5:1.
+
+Every interactive element is ≥44×44px. Where the design calls for a small
+visual — the 22px plan checkbox, the 34px calendar day — the control renders
+the small mark inside a full-size button rather than shrinking the hit area.
+
+Press feedback is a `.pressable` class: a 140ms `scale(0.97)`. Transform only,
+never a property that changes layout bounds and nudges neighbouring rows.
+Everything is disabled under `prefers-reduced-motion`.
+
 ## How exercises are measured
 
 Every exercise carries a `metric`, and it drives the log form, the plan

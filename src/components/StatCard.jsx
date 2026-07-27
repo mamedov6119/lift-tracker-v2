@@ -3,18 +3,26 @@ import T from "../theme.js";
 // The paired metric tiles under the Home header.
 export default function StatCard({ icon, label, value, align = "left" }) {
   return (
-    <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: 14, textAlign: align }}>
+    <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 14px 16px", textAlign: align }}>
       <div
         style={{
-          display: "flex", alignItems: "center", gap: 6, fontSize: 12,
-          color: T.textSecondary, fontWeight: 600,
+          display: "flex", alignItems: "center", gap: 6, fontSize: 11.5,
+          color: T.textMuted, fontWeight: 600, letterSpacing: 0.3, textTransform: "uppercase",
           justifyContent: align === "center" ? "center" : "flex-start",
         }}
       >
         {icon}
         {label}
       </div>
-      <div style={{ fontSize: 26, fontWeight: 700, marginTop: 8, color: T.text }}>{value}</div>
+      <div
+        className="tnum"
+        style={{
+          fontFamily: T.fontDisplay, fontSize: 30, fontWeight: 700, lineHeight: 1.1,
+          marginTop: 8, color: T.text, letterSpacing: 0.2,
+        }}
+      >
+        {value}
+      </div>
     </div>
   );
 }
@@ -22,9 +30,14 @@ export default function StatCard({ icon, label, value, align = "left" }) {
 // Compact variant used for the BEST / AVERAGE / SESSIONS row on Progress.
 export function MiniStat({ label, value }) {
   return (
-    <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: 14, textAlign: "center" }}>
-      <div style={{ fontSize: 11, color: T.textMuted, fontWeight: 600 }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 700, color: T.text, marginTop: 6 }}>{value}</div>
+    <div style={{ flex: 1, background: T.card, borderRadius: 16, padding: "14px 10px", textAlign: "center" }}>
+      <div style={{ fontSize: 10.5, color: T.textMuted, fontWeight: 600, letterSpacing: 0.5 }}>{label}</div>
+      <div
+        className="tnum"
+        style={{ fontFamily: T.fontDisplay, fontSize: 21, fontWeight: 700, color: T.text, marginTop: 6 }}
+      >
+        {value}
+      </div>
     </div>
   );
 }

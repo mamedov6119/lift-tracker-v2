@@ -12,7 +12,7 @@ const ICONS = ["barbell", "chevron", "rope", "arrows"];
 
 const field = {
   background: T.raised, border: `1px solid ${T.border}`, borderRadius: 12,
-  padding: "11px 12px", color: T.text, fontSize: 15, outline: "none", width: "100%", minWidth: 0,
+  minHeight: T.tap, padding: "0 12px", color: T.text, fontSize: 15, outline: "none", width: "100%", minWidth: 0,
 };
 const labelStyle = { fontSize: 11, fontWeight: 600, color: T.textMuted, letterSpacing: 0.3, textTransform: "uppercase" };
 const primaryBtn = {
@@ -20,17 +20,18 @@ const primaryBtn = {
   fontSize: 15, fontWeight: 700, border: "none", cursor: "pointer",
 };
 const ghostBtn = {
-  padding: "10px 14px", borderRadius: 20, background: T.raised, color: T.textSecondary,
-  fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer",
+  minHeight: T.tap, padding: "0 16px", borderRadius: 20, background: T.raised, color: T.textSecondary,
+  fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", flexShrink: 0,
 };
 
 function Pill({ active, children, ...rest }) {
   return (
     <button
       type="button"
+      className="pressable"
       style={{
-        padding: "8px 14px", borderRadius: 18, fontSize: 13, fontWeight: 600, cursor: "pointer",
-        border: "none", background: active ? T.accent : T.raised, color: active ? "#fff" : T.textSecondary,
+        minHeight: T.tap, padding: "0 16px", borderRadius: 18, fontSize: 13, fontWeight: 600, cursor: "pointer",
+        border: "none", background: active ? T.accent : T.raised, color: active ? T.accentInk : T.textSecondary,
       }}
       {...rest}
     >
@@ -160,7 +161,7 @@ export default function AddExerciseSheet({ date, planExerciseIds = [], onAdd, on
             onClick={onClose}
             aria-label="Close"
             style={{
-              width: 32, height: 32, borderRadius: 10, background: T.raised, border: "none",
+              width: T.tap, height: T.tap, borderRadius: 12, background: T.raised, border: "none",
               display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0,
             }}
           >
