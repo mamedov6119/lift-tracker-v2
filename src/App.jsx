@@ -6,6 +6,7 @@ import { insightForSurface } from "./lib/rules.js";
 import { useLiftData } from "./hooks/useLiftData.js";
 import BottomNav from "./components/BottomNav.jsx";
 import LogSetSheet from "./components/LogSetSheet.jsx";
+import AddExerciseSheet from "./components/AddExerciseSheet.jsx";
 import HomeTab from "./tabs/HomeTab.jsx";
 import TrainingTab from "./tabs/TrainingTab.jsx";
 import ProgressTab from "./tabs/ProgressTab.jsx";
@@ -16,11 +17,12 @@ export default function LiftTracker() {
   const [date, setDate] = useState(todayISO);
   const [advisorOpen, setAdvisorOpen] = useState(false);
   const [logging, setLogging] = useState(null);
+  const [adding, setAdding] = useState(false);
 
   const data = useLiftData(date);
   const {
     profile, plan, session, summary, insights, advisorQueue,
-    loading, error, togglePlanItem, completeAll, removePlanItem,
+    loading, error, togglePlanItem, completeAll, addPlanItem, removePlanItem,
     logSet, reviewAdvisorCard, dismissInsight, updateProfile, reload,
   } = data;
 
@@ -85,6 +87,7 @@ export default function LiftTracker() {
                   onTogglePlanItem={togglePlanItem}
                   onLogPlanItem={setLogging}
                   onRemovePlanItem={removePlanItem}
+                  onAddExercise={() => setAdding(true)}
                 />
               )}
               {tab === "training" && (
@@ -100,6 +103,7 @@ export default function LiftTracker() {
                   onLogPlanItem={setLogging}
                   onRemovePlanItem={removePlanItem}
                   onCompleteAll={completeAll}
+                  onAddExercise={() => setAdding(true)}
                   advisorOpen={advisorOpen}
                   onOpenAdvisor={() => setAdvisorOpen(true)}
                   onCloseAdvisor={() => setAdvisorOpen(false)}
@@ -132,6 +136,15 @@ export default function LiftTracker() {
           unit={profile?.unit}
           onSubmit={submitSet}
           onClose={() => setLogging(null)}
+        />
+      )}
+
+      {adding && (
+        <AddExerciseSheet
+          date={date}
+          planExerciseIds={plan.map((i) => i.exerciseId)}
+          onAdd={addPlanItem}
+          onClose={() => setAdding(false)}
         />
       )}
     </div>

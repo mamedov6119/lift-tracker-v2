@@ -4,7 +4,7 @@ import WeekStrip from "../components/WeekStrip.jsx";
 import PlanList from "../components/PlanList.jsx";
 import SessionRing from "../components/SessionRing.jsx";
 import AdvisorDeck from "../components/AdvisorDeck.jsx";
-import { ArrowRightIcon, BarsIcon, CircleCheckIcon, StarIcon } from "../components/icons.jsx";
+import { ArrowRightIcon, CircleCheckIcon, PlusIcon, StarIcon } from "../components/icons.jsx";
 import { formatMinutes, formatVolume } from "../lib/format.js";
 
 function StatLine({ label, value }) {
@@ -18,7 +18,7 @@ function StatLine({ label, value }) {
 
 export default function TrainingTab({
   date, onSelectDate, summary, session, plan, insight, onDismissInsight,
-  onTogglePlanItem, onLogPlanItem, onRemovePlanItem, onCompleteAll,
+  onTogglePlanItem, onLogPlanItem, onRemovePlanItem, onCompleteAll, onAddExercise,
   advisorOpen, onOpenAdvisor, onCloseAdvisor, advisorQueue, onReviewCard,
 }) {
   if (advisorOpen) {
@@ -31,16 +31,7 @@ export default function TrainingTab({
 
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: `28px ${T.gutter}px 0` }}>
-        <div style={{ padding: "10px 18px", borderRadius: 20, background: T.accent, color: "#fff", fontSize: 14, fontWeight: 700 }}>
-          Explore
-        </div>
-        <div style={{ width: 38, height: 38, borderRadius: 12, background: T.card, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <BarsIcon />
-        </div>
-      </div>
-
-      <div style={{ margin: `16px ${T.gutter}px 0` }}>
+      <div style={{ margin: `28px ${T.gutter}px 0` }}>
         <button
           type="button"
           onClick={onOpenAdvisor}
@@ -85,11 +76,20 @@ export default function TrainingTab({
         </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: `24px ${T.gutter}px 10px` }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, margin: `24px ${T.gutter}px 10px` }}>
         <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: T.text }}>Daily plan</h2>
-        <span style={{ fontSize: 12, color: T.textMuted, fontWeight: 600 }}>
-          {plan.filter((i) => i.completed).length}/{plan.length} done
-        </span>
+        <button
+          type="button"
+          onClick={onAddExercise}
+          style={{
+            display: "flex", alignItems: "center", gap: 5, padding: "8px 14px", borderRadius: 20,
+            background: T.raised, color: T.text, fontSize: 12.5, fontWeight: 600,
+            border: "none", cursor: "pointer", flexShrink: 0,
+          }}
+        >
+          <PlusIcon />
+          Add exercise
+        </button>
       </div>
 
       <PlanList
@@ -97,7 +97,7 @@ export default function TrainingTab({
         onToggle={onTogglePlanItem}
         onLog={onLogPlanItem}
         onRemove={onRemovePlanItem}
-        emptyLabel="No exercises planned. Open the Exercise Advisor above to fill out the day."
+        emptyLabel="No exercises planned. Add one above, or open the Exercise Advisor for suggestions."
       />
 
       {plan.length > 0 && (

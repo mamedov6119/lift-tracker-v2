@@ -118,8 +118,36 @@ a hosted Postgres, which is a `server/lib/repo.js` change, not an app rewrite.
 | `PORT` | `3001` | HTTP port |
 | `LIFT_DB` | `./data/lift.db` | SQLite file path — point this at your volume |
 | `LIFT_SEED_DEMO` | unset | `1` forces demo history, `0` forbids it; unset means dev-only |
+| `LIFT_PASSWORD` | unset | Shared password. **Unset means no auth at all** |
+| `LIFT_USER` | `lifter` | Username paired with `LIFT_PASSWORD` |
 
 `GET /api/health` returns `{"ok":true}` for platform health checks.
+
+## Authentication
+
+There is one shared password over HTTP Basic, guarding the API *and* the built
+client. It is not a user system — it's a lock on the front door of a
+single-profile app, which is what a personal training log on a public URL
+needs.
+
+```bash
+fly secrets set LIFT_PASSWORD='your-long-random-password'
+```
+
+Setting a secret triggers a redeploy. The browser then prompts once and
+remembers the credentials for the session, including for the app's own API
+calls.
+
+Three things worth knowing:
+
+- **With `LIFT_PASSWORD` unset there is no protection at all.** That's the
+  default so local development stays frictionless; the server prints a loud
+  warning at boot if it's missing in production.
+- **`/api/health` is deliberately exempt.** Fly's health checks are
+  unauthenticated, and a 401 there would mark the machine unhealthy and roll
+  back every deploy.
+- Comparison is constant-time on a SHA-256 digest of both username and
+  password, so neither value leaks through response timing or length.
 
 ### First boot in production
 
@@ -175,14 +203,8 @@ set (including rest) for everything else.
 
 ## Current scope
 
-> **Before putting this on a public URL:** there is no authentication. Anyone
-> who has the address can read your training history, log sets and hit
-> "Reset all data". That's fine on localhost; on the open internet it means
-> your data is world-writable. Put it behind a shared password, a private
-> network (Tailscale, Fly private networking), or your host's access control
-> before sharing the link.
-
-Single profile, no authentication — everything lives in a local SQLite file.
+Single profile, protected by one shared password (see [Authentication](#authentication)) —
+everything lives in a single SQLite file.
 The schema already carries `profile_id` on every row, so adding real users
 later means relaxing the `PROFILE_ID` constant in `server/db.js` rather than
 reshaping tables.

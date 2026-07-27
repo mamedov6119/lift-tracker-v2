@@ -56,6 +56,14 @@ export function ChevronRightIcon({ color = "rgba(255,255,255,0.3)", width = 7, h
   );
 }
 
+export function PlusIcon({ size = 12, color = "currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" aria-hidden="true">
+      <path d="M6 1v10M1 6h10" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function SwapIcon({ size = 11, color = "#fff" }) {
   return (
     <svg width={size} height={size} viewBox="0 0 14 14" aria-hidden="true">
@@ -76,16 +84,6 @@ export function StarIcon({ size = 15, color = "#fff" }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
       <path d="M12 2l2.2 6.8H21l-5.6 4.1 2.1 6.9L12 15.8 6.5 19.8l2.1-6.9L3 8.8h6.8z" fill={color} />
-    </svg>
-  );
-}
-
-export function BarsIcon({ color = "rgba(255,255,255,0.6)" }) {
-  return (
-    <svg width="16" height="14" viewBox="0 0 16 14" aria-hidden="true">
-      <rect x="0" y="8" width="3" height="6" fill={color} />
-      <rect x="6.5" y="4" width="3" height="10" fill={color} />
-      <rect x="13" y="0" width="3" height="14" fill={color} />
     </svg>
   );
 }

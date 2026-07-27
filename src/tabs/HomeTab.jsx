@@ -4,11 +4,11 @@ import InsightBanner from "../components/InsightBanner.jsx";
 import MonthCalendar from "../components/MonthCalendar.jsx";
 import PlanList from "../components/PlanList.jsx";
 import StatCard from "../components/StatCard.jsx";
-import { CheckCircleIcon, WeightIcon } from "../components/icons.jsx";
+import { CheckCircleIcon, PlusIcon, WeightIcon } from "../components/icons.jsx";
 import { formatLong, formatMonthRange, formatShort, monthOf } from "../lib/dates.js";
 import { formatVolume } from "../lib/format.js";
 
-export default function HomeTab({ date, onSelectDate, summary, plan, unit, insight, onDismissInsight, onTogglePlanItem, onLogPlanItem, onRemovePlanItem }) {
+export default function HomeTab({ date, onSelectDate, summary, plan, unit, insight, onDismissInsight, onTogglePlanItem, onLogPlanItem, onRemovePlanItem, onAddExercise }) {
   const month = monthOf(date);
 
   return (
@@ -43,10 +43,22 @@ export default function HomeTab({ date, onSelectDate, summary, plan, unit, insig
         onSelect={onSelectDate}
       />
 
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", margin: `22px ${T.gutter}px 10px` }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, margin: `22px ${T.gutter}px 10px` }}>
         <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: T.text }}>
           Daily plan: {formatShort(date)}
         </h2>
+        <button
+          type="button"
+          onClick={onAddExercise}
+          style={{
+            display: "flex", alignItems: "center", gap: 5, padding: "8px 14px", borderRadius: 20,
+            background: T.raised, color: T.text, fontSize: 12.5, fontWeight: 600,
+            border: "none", cursor: "pointer", flexShrink: 0,
+          }}
+        >
+          <PlusIcon />
+          Add
+        </button>
       </div>
 
       <PlanList
@@ -54,7 +66,7 @@ export default function HomeTab({ date, onSelectDate, summary, plan, unit, insig
         onToggle={onTogglePlanItem}
         onLog={onLogPlanItem}
         onRemove={onRemovePlanItem}
-        emptyLabel="Nothing planned for this day. Add something from the Exercise Advisor on the Training tab."
+        emptyLabel="Nothing planned for this day. Use Add to pick an exercise, or try the Exercise Advisor on the Training tab."
       />
     </>
   );

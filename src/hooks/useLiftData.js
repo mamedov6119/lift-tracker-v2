@@ -68,6 +68,17 @@ export function useLiftData(date) {
     await refreshDerived();
   }, [date, refreshDerived]);
 
+  // Adding straight from the catalog, rather than through the Advisor deck.
+  // Refreshes the advisor queue too, so a lift you just planned stops being
+  // offered as a suggestion.
+  const addPlanItem = useCallback(async (item) => {
+    const created = await api.addPlanItem({ ...item, date });
+    setPlan((current) => [...current, created]);
+    setAdvisorQueue(await api.getAdvisorQueue(date));
+    await refreshDerived();
+    return created;
+  }, [date, refreshDerived]);
+
   const removePlanItem = useCallback(async (item) => {
     await api.deletePlanItem(item.id);
     setPlan((current) => current.filter((i) => i.id !== item.id));
@@ -105,7 +116,7 @@ export function useLiftData(date) {
   return {
     profile, plan, session, summary, insights, advisorQueue,
     loading, error,
-    togglePlanItem, completeAll, removePlanItem, logSet,
+    togglePlanItem, completeAll, addPlanItem, removePlanItem, logSet,
     reviewAdvisorCard, dismissInsight, updateProfile, reload: load,
   };
 }

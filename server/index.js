@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 import { DB_PATH } from "./db.js";
 import { seed } from "./seed.js";
+import { basicAuth } from "./middleware/auth.js";
 import profileRoutes from "./routes/profile.js";
 import planRoutes from "./routes/plan.js";
 import setRoutes from "./routes/sets.js";
@@ -19,7 +20,18 @@ const seededDemo = seed();
 export const app = express();
 app.use(express.json());
 
+// Declared before the auth middleware so Fly's health checks don't need
+// credentials — a 401 here would mark the machine unhealthy and roll back
+// every deploy.
 app.get("/api/health", (req, res) => res.json({ ok: true }));
+
+// Everything past this point — API and the built client alike — is behind the
+// shared password when LIFT_PASSWORD is set.
+app.use(basicAuth({
+  password: process.env.LIFT_PASSWORD,
+  user: process.env.LIFT_USER || "lifter",
+}));
+
 app.use("/api", profileRoutes);
 app.use("/api", planRoutes);
 app.use("/api", setRoutes);
@@ -49,6 +61,11 @@ if (process.env.NODE_ENV !== "test") {
     if (seededDemo) console.log(`demo history seeded — delete ${DB_PATH} to reset`);
     if (!hasClient) {
       console.log("no dist/ found — serving the API only. Run `npm run build` to serve the app too.");
+    }
+    if (process.env.LIFT_PASSWORD) {
+      console.log(`auth              →  basic, user "${process.env.LIFT_USER || "lifter"}"`);
+    } else if (process.env.NODE_ENV === "production") {
+      console.warn("WARNING: LIFT_PASSWORD is not set — this deployment is open to anyone with the URL.");
     }
   });
 }
