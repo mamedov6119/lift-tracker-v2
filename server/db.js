@@ -16,10 +16,10 @@ export const db = new DatabaseSync(DB_PATH);
 db.exec("PRAGMA journal_mode = WAL");
 db.exec("PRAGMA foreign_keys = ON");
 
-// Single-user app for now (see PROFILE_ID): every row belongs to profile 1.
-// The columns are already shaped so adding a real users table later is a
-// matter of relaxing the constant, not reshaping the schema.
-export const PROFILE_ID = 1;
+// Every data row carries a profile_id, and a profile row is created per user
+// with the same id as that user. So `profile_id` IS the user id — the column
+// that used to be a hard-coded 1 is now whatever account is signed in.
+export const LEGACY_PROFILE_ID = 1;
 
 // Each exercise is measured one way, and that choice drives the log form, the
 // plan subtitle and the progress chart:
@@ -29,6 +29,25 @@ export const PROFILE_ID = 1;
 export const METRICS = ["weight", "reps", "time"];
 
 db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    email         TEXT    NOT NULL COLLATE NOCASE,
+    password_hash TEXT    NOT NULL,
+    name          TEXT    NOT NULL DEFAULT 'Athlete',
+    created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users (email COLLATE NOCASE);
+
+  -- id is a SHA-256 of the cookie value, never the value itself.
+  CREATE TABLE IF NOT EXISTS sessions (
+    id         TEXT    PRIMARY KEY,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now')),
+    expires_at TEXT    NOT NULL,
+    user_agent TEXT    NOT NULL DEFAULT ''
+  );
+  CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions (user_id);
+
   CREATE TABLE IF NOT EXISTS profile (
     id            INTEGER PRIMARY KEY,
     name          TEXT    NOT NULL DEFAULT 'Athlete',
@@ -115,6 +134,13 @@ function dropColumn(table, name) {
 }
 
 addColumn("exercises", "metric", "TEXT NOT NULL DEFAULT 'weight'");
+// NULL = built-in catalog, shared by everyone. Non-null = a custom exercise
+// belonging to that user, and invisible to every other account.
+addColumn("exercises", "owner_id", "INTEGER");
+// Customs that predate accounts belong to the legacy profile, so they travel
+// with the rest of that data when the first account adopts it.
+db.prepare(`UPDATE exercises SET owner_id = ? WHERE is_custom = 1 AND owner_id IS NULL`)
+  .run(LEGACY_PROFILE_ID);
 addColumn("sets", "duration_seconds", "INTEGER NOT NULL DEFAULT 0");
 addColumn("plan_items", "target_seconds", "INTEGER NOT NULL DEFAULT 45");
 
@@ -136,7 +162,16 @@ dropColumn("plan_items", "kcal");
 dropColumn("sets", "kcal");
 dropColumn("profile", "kcal_goal");
 
-db.prepare(`INSERT OR IGNORE INTO profile (id, name) VALUES (?, 'Athlete')`).run(PROFILE_ID);
+// Profile rows are created per account at signup, not at boot. A profile row
+// with no matching user is pre-auth data: `adoptLegacyData` in routes/auth.js
+// hands it to the first account created, so nothing logged before this change
+// is orphaned.
+export function hasLegacyData() {
+  const users = db.prepare(`SELECT COUNT(*) AS n FROM users`).get().n;
+  if (users > 0) return false;
+  const profile = db.prepare(`SELECT 1 FROM profile WHERE id = ?`).get(LEGACY_PROFILE_ID);
+  return !!profile;
+}
 
 export function tx(fn) {
   db.exec("BEGIN");

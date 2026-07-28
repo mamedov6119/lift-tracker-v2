@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../lib/api.js";
+import { api, UnauthorizedError } from "../lib/api.js";
 
 // Progress screen: the chip row of trackable lifts, plus the series for
 // whichever one is selected.
@@ -17,7 +17,7 @@ export function useProgress() {
         setSelected((current) => current || list[0]?.id || null);
         if (list.length === 0) setLoading(false);
       })
-      .catch((err) => { setError(err.message); setLoading(false); });
+      .catch((err) => { if (!(err instanceof UnauthorizedError)) setError(err.message); setLoading(false); });
   }, []);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export function useProgress() {
     setLoading(true);
     api.getProgress(selected)
       .then((data) => { if (!stale) { setDetail(data); setError(null); } })
-      .catch((err) => { if (!stale) setError(err.message); })
+      .catch((err) => { if (!stale && !(err instanceof UnauthorizedError)) setError(err.message); })
       .finally(() => { if (!stale) setLoading(false); });
     return () => { stale = true; };
   }, [selected]);

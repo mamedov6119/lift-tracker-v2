@@ -1,4 +1,4 @@
-import { db, PROFILE_ID, tx } from "./db.js";
+import { db, LEGACY_PROFILE_ID, tx } from "./db.js";
 import { shiftISO, todayISO } from "../shared/rules.js";
 
 // Thumbs are the gradient swatches from the design — cheap, asset-free art
@@ -49,6 +49,10 @@ export function seedCatalog() {
 export function seedDemoData() {
   const { count } = db.prepare(`SELECT COUNT(*) AS count FROM sets`).get();
   if (count > 0) return false;
+  // Demo data lands under the legacy profile, which the first account created
+  // then adopts (see createUserWithProfile). Never runs once accounts exist.
+  if (db.prepare(`SELECT COUNT(*) AS n FROM users`).get().n > 0) return false;
+  db.prepare(`INSERT OR IGNORE INTO profile (id, name) VALUES (?, ?)`).run(LEGACY_PROFILE_ID, "Athlete");
 
   const today = todayISO();
   const insertSet = db.prepare(`
@@ -90,7 +94,7 @@ export function seedDemoData() {
           // RPE drifts up across the block — this is what feeds the
           // effort-reassurance and high-effort rules.
           const rpe = Math.min(10, 6.5 + elapsed * 0.35);
-          insertSet.run(PROFILE_ID, date, exerciseId, weight, reps, seconds, Number(rpe.toFixed(1)));
+          insertSet.run(LEGACY_PROFILE_ID, date, exerciseId, weight, reps, seconds, Number(rpe.toFixed(1)));
         }
       }
     }
@@ -101,7 +105,7 @@ export function seedDemoData() {
       ["plank", 3, 0, 60],
     ];
     plan.forEach(([exerciseId, sets, reps, seconds], i) => {
-      insertPlan.run(PROFILE_ID, today, exerciseId, sets, reps, seconds, i);
+      insertPlan.run(LEGACY_PROFILE_ID, today, exerciseId, sets, reps, seconds, i);
     });
   });
 

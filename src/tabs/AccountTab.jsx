@@ -40,7 +40,7 @@ function Row({ label, open, onClick, danger, children, last }) {
   );
 }
 
-export default function AccountTab({ profile, summary, onUpdateProfile, onReset }) {
+export default function AccountTab({ profile, summary, onUpdateProfile, onReset, account, onSignOut }) {
   const [open, setOpen] = useState(null);
   const [confirmReset, setConfirmReset] = useState(false);
   const toggle = (key) => setOpen((current) => (current === key ? null : key));
@@ -58,6 +58,11 @@ export default function AccountTab({ profile, summary, onUpdateProfile, onReset 
           <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 2 }}>
             {profile.trainingStyle} · {summary?.daysCompleted ?? 0} days this month
           </div>
+          {account?.email && (
+            <div style={{ fontSize: 12.5, color: T.textMuted, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis" }}>
+              {account.email}
+            </div>
+          )}
         </div>
       </div>
 
@@ -111,6 +116,8 @@ export default function AccountTab({ profile, summary, onUpdateProfile, onReset 
           </div>
         </Row>
 
+        <Row label="Sign out" onClick={onSignOut} />
+
         <Row
           label={confirmReset ? "Tap again to erase everything" : "Reset all data"}
           danger
@@ -124,7 +131,7 @@ export default function AccountTab({ profile, summary, onUpdateProfile, onReset 
       </div>
 
       <p style={{ margin: `16px ${T.gutter}px 0`, fontSize: 11.5, color: T.textFaint, lineHeight: 1.5 }}>
-        Single-profile build — everything is stored in the local SQLite database on your own machine.
+        Your data is private to this account. Resetting clears your history and custom exercises; it does not delete the account.
       </p>
     </>
   );

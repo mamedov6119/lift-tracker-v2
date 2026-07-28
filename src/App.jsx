@@ -8,6 +8,8 @@ import BottomNav from "./components/BottomNav.jsx";
 import LogSetSheet from "./components/LogSetSheet.jsx";
 import AddExerciseSheet from "./components/AddExerciseSheet.jsx";
 import SplashScreen from "./components/SplashScreen.jsx";
+import AuthScreen from "./components/AuthScreen.jsx";
+import { useAuth } from "./hooks/useAuth.js";
 import HomeTab from "./tabs/HomeTab.jsx";
 import TrainingTab from "./tabs/TrainingTab.jsx";
 import ProgressTab from "./tabs/ProgressTab.jsx";
@@ -21,12 +23,21 @@ export default function LiftTracker() {
   const [adding, setAdding] = useState(false);
   const [splashDone, setSplashDone] = useState(false);
 
-  const data = useLiftData(date);
+  const { user, checking, login, signup, logout, onSessionLost } = useAuth();
+  // Keyed on the account id so switching users tears the whole tree down
+  // rather than briefly showing the previous account's data.
+  const data = useLiftData(date, user?.id, onSessionLost);
   const {
     profile, plan, session, summary, insights, advisorQueue,
     loading, error, togglePlanItem, completeAll, addPlanItem, removePlanItem,
     logSet, reviewAdvisorCard, dismissInsight, updateProfile, reload,
   } = data;
+
+  const signOut = useCallback(async () => {
+    await logout();
+    setTab("home");
+    setSplashDone(true);
+  }, [logout]);
 
   // One banner per screen, picked from the same server-evaluated rule set.
   const bySurface = useMemo(() => ({
@@ -55,6 +66,17 @@ export default function LiftTracker() {
     setDate(todayISO());
     await reload();
   }, [reload]);
+
+  // The splash covers the session check, so there's no flash of the sign-in
+  // screen for someone who is already signed in.
+  if (!user) {
+    return (
+      <>
+        {!checking && <AuthScreen onLogin={login} onSignup={signup} />}
+        {!splashDone && <SplashScreen onDone={() => setSplashDone(true)} />}
+      </>
+    );
+  }
 
   return (
     <div style={shell}>
@@ -122,6 +144,8 @@ export default function LiftTracker() {
                   summary={summary}
                   onUpdateProfile={updateProfile}
                   onReset={resetAll}
+                  account={user}
+                  onSignOut={signOut}
                 />
               )}
             </>

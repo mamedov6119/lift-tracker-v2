@@ -5,7 +5,9 @@ import { fileURLToPath } from "node:url";
 
 import { DB_PATH } from "./db.js";
 import { seed } from "./seed.js";
-import { basicAuth } from "./middleware/auth.js";
+import { purgeExpiredSessions } from "./lib/sessions.js";
+import { attachUser, requireAuth } from "./middleware/auth.js";
+import authRoutes from "./routes/auth.js";
 import profileRoutes from "./routes/profile.js";
 import planRoutes from "./routes/plan.js";
 import setRoutes from "./routes/sets.js";
@@ -25,13 +27,15 @@ app.use(express.json());
 // every deploy.
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 
-// Everything past this point — API and the built client alike — is behind the
-// shared password when LIFT_PASSWORD is set.
-app.use(basicAuth({
-  password: process.env.LIFT_PASSWORD,
-  user: process.env.LIFT_USER || "lifter",
-}));
+// Reads the session cookie if present; never rejects on its own.
+app.use(attachUser);
 
+// Public: sign up, sign in, and the "am I signed in?" probe.
+app.use("/api", authRoutes);
+
+// Everything below needs an account. Each handler then scopes its queries to
+// req.user.id, so one account can never read another's data.
+app.use("/api", requireAuth);
 app.use("/api", profileRoutes);
 app.use("/api", planRoutes);
 app.use("/api", setRoutes);
@@ -62,10 +66,8 @@ if (process.env.NODE_ENV !== "test") {
     if (!hasClient) {
       console.log("no dist/ found — serving the API only. Run `npm run build` to serve the app too.");
     }
-    if (process.env.LIFT_PASSWORD) {
-      console.log(`auth              →  basic, user "${process.env.LIFT_USER || "lifter"}"`);
-    } else if (process.env.NODE_ENV === "production") {
-      console.warn("WARNING: LIFT_PASSWORD is not set — this deployment is open to anyone with the URL.");
-    }
+    console.log(`auth              →  accounts, signup ${process.env.LIFT_SIGNUP_CODE ? "requires a code" : "open"}`);
+    const purged = purgeExpiredSessions();
+    if (purged) console.log(`sessions          →  purged ${purged} expired`);
   });
 }

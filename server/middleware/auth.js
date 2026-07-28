@@ -1,34 +1,59 @@
-import { createHash, timingSafeEqual } from "node:crypto";
+import { COOKIE_NAME, readCookie, resolveSession, setSessionCookie } from "../lib/sessions.js";
 
-// Hashing first means the comparison is constant-time even when the supplied
-// value is a different length from the real one — timingSafeEqual throws on
-// mismatched buffer sizes, which would itself leak length.
-const digest = (value) => createHash("sha256").update(String(value)).digest();
-const safeEqual = (a, b) => timingSafeEqual(digest(a), digest(b));
+// Attaches req.user when a valid session cookie is present. Never rejects —
+// routes that need a user say so with requireAuth, so public endpoints
+// (health, login, the SPA shell) stay reachable.
+export function attachUser(req, res, next) {
+  const token = readCookie(req, COOKIE_NAME);
+  const session = token ? resolveSession(token) : null;
+  if (session) {
+    req.user = session.user;
+    req.sessionToken = token;
+    // Sliding expiry: re-stamp the cookie when the row was extended, so a
+    // daily-use app never logs you out mid-week.
+    if (session.refreshed) setSessionCookie(res, token);
+  }
+  next();
+}
 
-// Single shared password over HTTP Basic. Not a user system — it's a lock on
-// the front door of a single-profile app, which is what a personal training
-// log on a public URL actually needs.
-//
-// With no password configured the middleware is a no-op, so local development
-// stays friction-free; production without one logs a loud warning at boot.
-export function basicAuth({ password, user = "lifter", exempt = [] } = {}) {
-  return function basicAuthMiddleware(req, res, next) {
-    if (!password) return next();
-    if (exempt.includes(req.path)) return next();
+export function requireAuth(req, res, next) {
+  if (!req.user) return res.status(401).json({ error: "authentication required" });
+  next();
+}
 
-    const [scheme, encoded] = (req.get("authorization") || "").split(" ");
-    if (scheme === "Basic" && encoded) {
-      const decoded = Buffer.from(encoded, "base64").toString("utf8");
-      const separator = decoded.indexOf(":");
-      const suppliedUser = decoded.slice(0, separator);
-      const suppliedPassword = decoded.slice(separator + 1);
-      if (safeEqual(suppliedUser, user) && safeEqual(suppliedPassword, password)) {
-        return next();
+// Fixed-window limiter, in memory. This app runs as a single machine with a
+// single volume (a Fly volume attaches to exactly one), so per-process state
+// is per-deployment state. Swap for a shared store if that ever changes.
+const buckets = new Map();
+
+export function rateLimit({ windowMs = 15 * 60 * 1000, max = 10, key: keyFn } = {}) {
+  return (req, res, next) => {
+    const key = keyFn ? keyFn(req) : req.ip;
+    const now = Date.now();
+    const bucket = buckets.get(key);
+
+    if (!bucket || now > bucket.resetAt) {
+      buckets.set(key, { count: 1, resetAt: now + windowMs });
+      // Opportunistic sweep so the map can't grow without bound.
+      if (buckets.size > 5000) {
+        for (const [k, v] of buckets) if (now > v.resetAt) buckets.delete(k);
       }
+      return next();
     }
 
-    res.set("WWW-Authenticate", 'Basic realm="Lift Tracker", charset="UTF-8"');
-    res.status(401).json({ error: "authentication required" });
+    if (bucket.count >= max) {
+      const retryAfter = Math.ceil((bucket.resetAt - now) / 1000);
+      res.set("Retry-After", String(retryAfter));
+      return res.status(429).json({
+        error: `Too many attempts. Try again in ${Math.ceil(retryAfter / 60)} minute(s).`,
+      });
+    }
+
+    bucket.count += 1;
+    next();
   };
+}
+
+export function clearRateLimit(key) {
+  buckets.delete(key);
 }

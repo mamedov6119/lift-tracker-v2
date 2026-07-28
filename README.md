@@ -118,36 +118,69 @@ a hosted Postgres, which is a `server/lib/repo.js` change, not an app rewrite.
 | `PORT` | `3001` | HTTP port |
 | `LIFT_DB` | `./data/lift.db` | SQLite file path — point this at your volume |
 | `LIFT_SEED_DEMO` | unset | `1` forces demo history, `0` forbids it; unset means dev-only |
-| `LIFT_PASSWORD` | unset | Shared password. **Unset means no auth at all** |
-| `LIFT_USER` | `lifter` | Username paired with `LIFT_PASSWORD` |
+| `LIFT_SIGNUP_CODE` | unset | If set, creating an account requires this code. Unset means open registration |
 
 `GET /api/health` returns `{"ok":true}` for platform health checks.
 
 ## Authentication
 
-There is one shared password over HTTP Basic, guarding the API *and* the built
-client. It is not a user system — it's a lock on the front door of a
-single-profile app, which is what a personal training log on a public URL
-needs.
+Email + password accounts, with the session in an httpOnly cookie. **No new
+dependencies** — `express`, `node:sqlite` and `node:crypto` cover all of it.
+
+Why this shape:
+
+- **scrypt from `node:crypto`, not bcrypt or argon2.** Those are native
+  modules, and this project deliberately avoids native compilation (see
+  `node:sqlite`) so the Alpine image builds with a plain `npm ci`. scrypt is
+  memory-hard and OWASP-listed for password storage. Cost parameters are stored
+  per-hash, so raising them later doesn't invalidate existing passwords.
+- **A session cookie, not a JWT in localStorage.** Client and API are
+  same-origin, so there's no cross-domain reason for a bearer token — and an
+  httpOnly cookie can't be read by JavaScript, so XSS can't exfiltrate the
+  session. Revocation is immediate (logout, password change) with no
+  refresh-token machinery.
+- **Not Clerk / Auth0 / Supabase.** An external dependency and a bill, for what
+  is one container and one SQLite file.
+
+Details worth knowing:
+
+- Only a **SHA-256 of the session token** is stored, so a leaked database
+  yields no usable sessions — the same reasoning as not storing raw passwords.
+- Sessions last 30 days and **slide**: used within that window they re-issue,
+  so an app in regular use never signs you out mid-week.
+- **Changing your password signs out every other device.**
+- Login is rate-limited to 10 attempts per 15 min **keyed on the email**, not
+  the IP, so one account under attack can't lock out everyone behind the same
+  NAT. Signup is 5/hour per IP.
+- Wrong password and unknown account return the **same message with comparable
+  timing**, so the endpoint can't be used to discover who has an account.
+- CSRF cover is `SameSite=Lax` plus a JSON-only API with no CORS: a cross-site
+  form post can't set `Content-Type: application/json`, so it never reaches a
+  handler.
+- **`/api/health` stays public.** Fly's health checks are unauthenticated, and
+  a 401 there would mark the machine unhealthy and roll back every deploy.
+
+### Per-account data isolation
+
+Every table carries `profile_id`, which is now the user id, and every repo
+function takes the caller's id explicitly — there is no ambient "current user"
+to forget. The built-in exercise catalog is shared; **custom exercises belong
+to the account that created them** and are invisible to everyone else.
+
+`server/lib/auth.test.js` asserts this directly: one account cannot read,
+modify, delete or reset another's sets, plan items or custom exercises.
+
+### Upgrading an existing deployment
+
+Data logged before accounts existed lives under profile id 1. **The first
+account created adopts it**, so an existing install keeps its history rather
+than stranding it. Every account after that starts empty.
+
+`LIFT_PASSWORD` and `LIFT_USER` (the old shared-password gate) are gone:
 
 ```bash
-fly secrets set LIFT_PASSWORD='your-long-random-password'
+fly secrets unset LIFT_PASSWORD LIFT_USER
 ```
-
-Setting a secret triggers a redeploy. The browser then prompts once and
-remembers the credentials for the session, including for the app's own API
-calls.
-
-Three things worth knowing:
-
-- **With `LIFT_PASSWORD` unset there is no protection at all.** That's the
-  default so local development stays frictionless; the server prints a loud
-  warning at boot if it's missing in production.
-- **`/api/health` is deliberately exempt.** Fly's health checks are
-  unauthenticated, and a 401 there would mark the machine unhealthy and roll
-  back every deploy.
-- Comparison is constant-time on a SHA-256 digest of both username and
-  password, so neither value leaks through response timing or length.
 
 ### First boot in production
 
@@ -163,7 +196,12 @@ idempotent, so redeploying over an existing database is safe.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| GET / PATCH | `/api/profile` | single-user profile, weight unit, mute |
+| POST | `/api/auth/signup` | create an account |
+| POST | `/api/auth/login` | sign in |
+| POST | `/api/auth/logout` | sign out |
+| GET | `/api/auth/me` | the signed-in account, or 401 |
+| POST | `/api/auth/password` | change password; signs out other devices |
+| GET / PATCH | `/api/profile` | profile name, training style, weight unit, mute |
 | GET / POST | `/api/exercises` | exercise catalog (+ custom exercises) |
 | DELETE | `/api/data` | reset logged history |
 | GET / POST | `/api/plan` | a day's plan; add an exercise to it |
@@ -262,8 +300,8 @@ set (including rest) for everything else.
 
 ## Current scope
 
-Single profile, protected by one shared password (see [Authentication](#authentication)) —
-everything lives in a single SQLite file.
+Multi-account with per-account data isolation (see
+[Authentication](#authentication)); everything lives in a single SQLite file.
 The schema already carries `profile_id` on every row, so adding real users
 later means relaxing the `PROFILE_ID` constant in `server/db.js` rather than
 reshaping tables.

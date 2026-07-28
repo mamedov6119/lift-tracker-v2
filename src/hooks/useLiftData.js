@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { api } from "../lib/api.js";
+import { api, UnauthorizedError } from "../lib/api.js";
 import { monthOf } from "../lib/dates.js";
 
 // Everything the Home and Training screens need for one selected date, plus
 // the write actions that touch it. The server is the source of truth, so each
 // mutation re-reads the slices it can affect rather than patching local state
 // — the rules engine and the calorie totals are derived server-side.
-export function useLiftData(date) {
+export function useLiftData(date, userId, onSessionLost) {
   const [profile, setProfile] = useState(null);
   const [plan, setPlan] = useState([]);
   const [session, setSession] = useState(null);
@@ -36,15 +36,19 @@ export function useLiftData(date) {
       setAdvisorQueue(adv);
       setError(null);
     } catch (err) {
-      setError(err.message);
+      // A dropped session isn't a load failure — hand it to the auth layer,
+      // which swaps in the sign-in screen.
+      if (err instanceof UnauthorizedError) onSessionLost?.();
+      else setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [date, month]);
+  }, [date, month, userId, onSessionLost]);
 
   useEffect(() => {
+    if (!userId) return;
     load();
-  }, [load]);
+  }, [load, userId]);
 
   const refreshDerived = useCallback(async () => {
     const [s, sum, ins] = await Promise.all([
