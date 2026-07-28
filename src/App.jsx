@@ -7,6 +7,7 @@ import { useLiftData } from "./hooks/useLiftData.js";
 import BottomNav from "./components/BottomNav.jsx";
 import LogSetSheet from "./components/LogSetSheet.jsx";
 import AddExerciseSheet from "./components/AddExerciseSheet.jsx";
+import SplashScreen from "./components/SplashScreen.jsx";
 import HomeTab from "./tabs/HomeTab.jsx";
 import TrainingTab from "./tabs/TrainingTab.jsx";
 import ProgressTab from "./tabs/ProgressTab.jsx";
@@ -18,6 +19,7 @@ export default function LiftTracker() {
   const [advisorOpen, setAdvisorOpen] = useState(false);
   const [logging, setLogging] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [splashDone, setSplashDone] = useState(false);
 
   const data = useLiftData(date);
   const {
@@ -147,6 +149,10 @@ export default function LiftTracker() {
           onClose={() => setAdding(false)}
         />
       )}
+
+      {/* Sits over a fully-mounted app, so the 3.1s lift doubles as cover for
+          the first data fetch instead of adding time on top of it. */}
+      {!splashDone && <SplashScreen onDone={() => setSplashDone(true)} />}
     </div>
   );
 }

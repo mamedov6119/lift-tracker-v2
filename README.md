@@ -178,6 +178,30 @@ idempotent, so redeploying over an existing database is safe.
 | POST | `/api/insights/:id/dismiss` | dismiss for the day |
 | GET / POST | `/api/advisor` | Exercise Advisor queue; swipe result |
 
+## Splash
+
+`src/components/SplashScreen.jsx` is the app-open animation — a 2.5s
+clean-and-jerk that ends with the wordmark dropping onto the bar, ported from
+the Claude Design project `Lifter Splash.dc.html`. The pose maths, timeline and
+drawing are carried over verbatim; only the DC runtime wrapper was replaced
+with a plain `requestAnimationFrame` loop, so nothing extra ships.
+
+Two behavioural changes from the source: the design **loops**, this plays one
+pass and reports done (its built-in fade at `u≈0.9–1.0` doubles as the exit),
+and the tweakable props are pinned to the values saved in the design
+(`weight 0.9`, `showFloor true`, wordmark "Lifter").
+
+- It renders **over an already-mounted app**, so the 2.5s covers the first data
+  fetch rather than adding to it.
+- **Tap or press any key to skip.**
+- Under `prefers-reduced-motion` it holds the landed frame for 900ms instead of
+  animating, so the brand moment still happens with no motion.
+- The wordmark needs **Barlow italic 800**, which is why `index.html` requests
+  the `ital` axis.
+- Dev only: `?splash=0.62` freezes the timeline at that normalised position to
+  inspect a single frame. Guarded by `import.meta.env.DEV`, so it is stripped
+  from production builds.
+
 ## Design system
 
 `design-system/lifter/MASTER.md` holds the generated reference. Two deliberate
